@@ -1,0 +1,13 @@
+{
+  "env" : {
+    "node" : true
+  },
+  "rules" : {
+    "space-infix-ops": false,
+    "no-spaced-func": false,
+    "no-trailing-spaces": false,
+    "no-wrap-func": false,
+    "camelcase": false,
+    "strict" : false
+  }
+}

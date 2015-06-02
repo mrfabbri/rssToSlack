@@ -3,14 +3,22 @@
 	"description": "Publish RSS links to Slack",
 	"author": "Dave Winer <dave@smallpicture.com>",
 	"version": "0.40.0",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/scripting/rssToSlack"
+		},
 	"scripts": {
-		"start": "node river4.js"
+		"start": "node river4.js",
+		"test": "eslint rsstoslack.js"
 			},
 	"dependencies" : {
 		"request": "*",
 		"MD5": "*",
 		"feedparser": "*"
 		}, 
+	"devDependencies": {
+		"eslint": "^0.22.1"
+		},
 	"license": "MIT",
 	"engines": {
 		"node": "0.10.*"
