@@ -24,8 +24,6 @@ var myVersion = "0.42", myProductName = "RSS to Slack";
 	
 	//structured listing: http://scripting.com/listings/rsstoslack.html
 	
-var http = require ("http"); 
-var https = require ("https");
 var md5 = require ("MD5");
 var FeedParser = require ("feedparser");
 var request = require ("request");
@@ -34,7 +32,7 @@ var fs = require ("fs");
 var appStats = { 
 	ctStarts: 0, whenLastStart: new Date (0),
 	ctReadErrors: 0, ctReads: 0, ctBytesRead: 0,
-	feeds: new Object ()
+	feeds: {}
 	};
 var flStatsChanged = false;
 var appConfig;
@@ -73,9 +71,9 @@ function sendToSlack (s, urlWebHook, theUsername, theIconUrl, theIconEmoji, theC
 		json: payload
 		};
 	request (theRequest, function (error, response, body) {
-		if (!error && (response.statusCode == 200)) {
+		if (!error && (response.statusCode === 200)) {
 			if (callback) {
-				callback (body) 
+				callback (body);
 				}
 			}
 		else {
@@ -88,7 +86,7 @@ function readFeed (urlfeed, itemcallback, feedcallback) {
 	var feedparser = new FeedParser ();
 	req.on ("response", function (res) {
 		var stream = this;
-		if (res.statusCode == 200) {
+		if (res.statusCode === 200) {
 			stream.pipe (feedparser);
 			}
 		});
@@ -112,10 +110,8 @@ function readFeed (urlfeed, itemcallback, feedcallback) {
 	}
 function getItemGuid (item) {
 	function ok (val) {
-		if (val != undefined) {
-			if (val != "null") {
-				return (true);
-				}
+		if (val !== undefined && val !== "null") {
+			return (true);
 			}
 		return (false);
 		}
@@ -138,7 +134,8 @@ function getItemGuid (item) {
 	return (guid);
 	}
 function checkOneFeed (theConfig, callback) {
-	var itemsInFeed = new Object (), ctnewitems = 0;
+	var itemsInFeed = {} (), ctnewitems = 0;
+	var theStats;
 	function sendItem (item) {
 		if (appConfig.flPostingEnabled) {
 			var slackLinkText = " (link)";
@@ -157,7 +154,7 @@ function checkOneFeed (theConfig, callback) {
 	function itemcallback (item) { //called once for each item in the feed
 		var theGuid = getItemGuid (item);
 		itemsInFeed [theGuid] = true;
-		if ((!appConfig.flAtMostOnePostPerMinute) || (ctnewitems == 0)) {
+		if ((!appConfig.flAtMostOnePostPerMinute) || (ctnewitems === 0)) {
 			if (theStats.idsSeen [theGuid] === undefined) { //new item
 				theStats.idsSeen [theGuid] = true;
 				statsChanged ();
@@ -177,12 +174,12 @@ function checkOneFeed (theConfig, callback) {
 			}
 		}
 	if (theConfig.enabled) {
-		var theStats = appStats.feeds [theConfig.name];
+		theStats = appStats.feeds [theConfig.name];
 		if (theStats === undefined) { //cool! a new feed
 			theStats = {
 				ctFeedChecks: 0, whenLastCheck: new Date (0),
 				ctStories: 0, whenLastStory: new Date (0),
-				idsSeen: new Object ()
+				idsSeen: {} ()
 				};
 			appStats.feeds [theConfig.name] = theStats;
 			}
@@ -223,7 +220,7 @@ function readConfig (callback) {
 			appStats.ctBytesRead += dataAboutRead.Body.length;
 			statsChanged ();
 			}
-		if (callback != undefined) {
+		if (callback !== undefined) {
 			callback ();
 			}
 		});
@@ -234,6 +231,7 @@ function readStats (callback) {
 			Body: data
 			};
 		if (err) {
+			console.log ("readStats: error == " + jsonStringify (err));
 			}
 		else {
 			var storedPrefs = JSON.parse (dataAboutRead.Body);
@@ -244,7 +242,7 @@ function readStats (callback) {
 			appStats.ctBytesRead += dataAboutRead.Body.length;
 			statsChanged ();
 			}
-		if (callback != undefined) {
+		if (callback !== undefined) {
 			callback ();
 			}
 		});
